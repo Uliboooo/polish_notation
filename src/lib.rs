@@ -6,6 +6,13 @@ pub struct Expr<T: Add + Sub + Mul + Div + Sized> {
 }
 
 impl<T: Add<Output = T> + Sub<Output = T> + Mul<Output = T> + Div<Output = T> + Sized> Expr<T> {
+    pub fn new(op: Ope, values: (Value<T>, Value<T>)) -> Self {
+        Self {
+            op,
+            values: (Box::new(values.0), Box::new(values.1)),
+        }
+    }
+
     pub fn eval(self) -> Box<T> {
         let v1 = match *self.values.0 {
             Value::Expr(expr) => *expr.eval(),
@@ -79,6 +86,16 @@ mod tests {
             values: (Box::new(Value::Value(20)), Box::new(Value::Value(10))),
         };
         assert_eq!(*expr.eval(), 2);
+    }
+
+    /// + 20.0 20.3
+    #[test]
+    fn eval_float() {
+        let expr = Expr {
+            op: Ope::Add,
+            values: (Box::new(Value::Value(20.0)), Box::new(Value::Value(20.3))),
+        };
+        assert_eq!(*expr.eval(), 40.3);
     }
 
     /// * + 1 2 + 3 4
